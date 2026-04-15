@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}{{ paste.title }} - ScriptShare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .lang-badge {
+        background: #58a6ff;
+        color: #0d1117;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    .stats { color: #8b949e; font-size: 14px; }
+    .actions { display: flex; gap: 10px; margin-bottom: 20px; }
+    {{ css }}
+    .highlight {
+        background: #161b22;
+        border-radius: 8px;
+        border: 1px solid #30363d;
+        overflow-x: auto;
+    }
+    .highlight pre {
+        margin: 0;
+        padding: 20px;
+        line-height: 1.6;
+    }
+    .linenos {
+        color: #6e7681;
+        padding-right: 20px;
+        border-right: 1px solid #30363d;
+        margin-right: 20px;
+        user-select: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="box">
+    <div class="meta">
+        <div>
+            <h2>{{ paste.title }}</h2>
+            <span class="stats">
+                📅 {{ paste.created_at.strftime('%d/%m/%Y') }} • 
+                👁️ {{ paste.views }} visualizações •
+                💾 Salvo permanentemente
+            </span>
+        </div>
+        <span class="lang-badge">{{ paste.language }}</span>
+    </div>
+    
+    <div class="actions">
+        <a href="/raw/{{ paste.id }}" class="btn btn-secondary">📄 Código Puro</a>
+        <button onclick="copyCode()" class="btn btn-secondary">📋 Copiar</button>
+        <a href="/" class="btn btn-secondary">+ Novo</a>
+    </div>
+    
+    {{ highlighted|safe }}
+</div>
+
+<textarea id="codeContent" style="position: absolute; left: -9999px;">{{ paste.content }}</textarea>
+
+<script>
+function copyCode() {
+    navigator.clipboard.writeText(document.getElementById('codeContent').value);
+    alert('Código copiado!');
+}
+</script>
+{% endblock %}

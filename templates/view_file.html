@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ paste.title }} - ScriptShare{% endblock %}
+
+{% block content %}
+<div class="box" style="text-align: center; padding: 60px 20px;">
+    <div style="font-size: 64px; margin-bottom: 20px;">
+        {% if paste.mime_type.startswith('image/') %}🖼️
+        {% elif paste.mime_type.startswith('video/') %}🎬
+        {% elif paste.mime_type.startswith('audio/') %}🎵
+        {% elif paste.mime_type.startswith('text/') or paste.mime_type == 'application/json' %}📄
+        {% else %}📦
+        {% endif %}
+    </div>
+    
+    <h2>{{ paste.filename or paste.title }}</h2>
+    
+    <div style="color: #8b949e; margin: 20px 0;">
+        <p>📦 {{ (paste.get_size() / 1024)|round(2) }} KB • {{ paste.mime_type }}</p>
+        <p>📅 {{ paste.created_at.strftime('%d/%m/%Y') }} • 👁️ {{ paste.views }} views</p>
+        <p>💾 Arquivo salvo permanentemente</p>
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <a href="/download/{{ paste.id }}" class="btn" style="font-size: 18px; padding: 15px 40px;">
+            ⬇️ Baixar Arquivo
+        </a>
+    </div>
+    
+    {% if paste.mime_type.startswith('image/') %}
+    <div style="margin-top: 30px;">
+        <img src="/raw/{{ paste.id }}" style="max-width: 100%; border-radius: 8px; border: 1px solid #30363d;" alt="{{ paste.filename }}">
+    </div>
+    {% elif paste.mime_type.startswith('text/') or paste.mime_type in ['application/json', 'application/javascript'] %}
+    <div style="margin-top: 30px; text-align: left;">
+        <pre style="background: #0d1117; padding: 20px; border-radius: 8px; overflow-x: auto;"><code>{{ paste.file_data.decode('utf-8', errors='ignore')[:2000] }}{% if paste.get_size() > 2000 %}... (baixe para ver completo){% endif %}</code></pre>
+    </div>
+    {% endif %}
+    
+    <div style="margin-top: 30px;">
+        <a href="/" class="btn btn-secondary">← Enviar outro</a>
+    </div>
+</div>
+{% endblock %}
