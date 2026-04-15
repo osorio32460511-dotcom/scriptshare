@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>Enviar novo arquivo</h2>
+    <a href="/logout" class="btn btn-secondary">🚪 Sair</a>
+</div>
+
 <div class="tabs">
     <div class="tab active" onclick="switchTab('code')">💻 Colar Código</div>
     <div class="tab" onclick="switchTab('file')">📁 Enviar Arquivo</div>
@@ -93,7 +98,8 @@ document.getElementById('pasteForm').onsubmit = async (e) => {
     const formData = new FormData(e.target);
     const res = await fetch('/upload', {method: 'POST', body: formData});
     const data = await res.json();
-    showResult(data.url);
+    if(data.success) showResult(data.url);
+    else alert('Erro: ' + data.error);
 };
 
 document.getElementById('uploadForm').onsubmit = async (e) => {
@@ -101,7 +107,8 @@ document.getElementById('uploadForm').onsubmit = async (e) => {
     const formData = new FormData(e.target);
     const res = await fetch('/upload', {method: 'POST', body: formData});
     const data = await res.json();
-    showResult(data.url);
+    if(data.success) showResult(data.url);
+    else alert('Erro: ' + data.error);
 };
 
 function showResult(url) {

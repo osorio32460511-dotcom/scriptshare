@@ -52,8 +52,7 @@
             <h2>{{ paste.title }}</h2>
             <span class="stats">
                 📅 {{ paste.created_at.strftime('%d/%m/%Y') }} • 
-                👁️ {{ paste.views }} visualizações •
-                💾 Salvo permanentemente
+                👁️ {{ paste.views }} visualizações
             </span>
         </div>
         <span class="lang-badge">{{ paste.language }}</span>
@@ -62,7 +61,6 @@
     <div class="actions">
         <a href="/raw/{{ paste.id }}" class="btn btn-secondary">📄 Código Puro</a>
         <button onclick="copyCode()" class="btn btn-secondary">📋 Copiar</button>
-        <a href="/" class="btn btn-secondary">+ Novo</a>
     </div>
     
     {{ highlighted|safe }}

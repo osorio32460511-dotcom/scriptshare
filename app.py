@@ -1,7 +1,7 @@
 import os
 import uuid
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, Response, abort
+from flask import Flask, render_template, request, redirect, Response, abort, session
 from flask_sqlalchemy import SQLAlchemy
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name, guess_lexer, TextLexer
@@ -10,9 +10,11 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-this')
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
-# Database config
+# Senha do admin (coloque uma senha forte!)
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'sua-senha-aqui-mude-isso')
+
 database_url = os.environ.get('DATABASE_URL')
 if database_url and database_url.startswith('postgres://'):
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
@@ -24,21 +26,20 @@ db = SQLAlchemy(app)
 class Paste(db.Model):
     id = db.Column(db.String(8), primary_key=True)
     title = db.Column(db.String(200))
-    content = db.Column(db.Text)  # Para código
+    content = db.Column(db.Text)
     language = db.Column(db.String(50))
-    type = db.Column(db.String(10))  # 'code' ou 'file'
+    type = db.Column(db.String(10))
     filename = db.Column(db.String(255))
     mime_type = db.Column(db.String(100))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     views = db.Column(db.Integer, default=0)
-    file_data = db.Column(db.LargeBinary)  # Arquivos salvos no banco
+    file_data = db.Column(db.LargeBinary)
     
     def get_size(self):
         if self.file_data:
             return len(self.file_data)
         return 0
 
-# Cria tabelas
 with app.app_context():
     db.create_all()
 
@@ -47,12 +48,30 @@ def generate_id():
 
 @app.route('/')
 def index():
+    # Se não estiver logado, mostra página de login
+    if not session.get('admin'):
+        return render_template('login.html')
     return render_template('index.html')
+
+@app.route('/login', methods=['POST'])
+def login():
+    if request.form.get('password') == ADMIN_PASSWORD:
+        session['admin'] = True
+        return redirect('/')
+    return render_template('login.html', error='Senha incorreta!')
+
+@app.route('/logout')
+def logout():
+    session.pop('admin', None)
+    return redirect('/')
 
 @app.route('/upload', methods=['POST'])
 def upload():
+    # Protege o upload - só admin pode
+    if not session.get('admin'):
+        return {'success': False, 'error': 'Não autorizado'}, 403
+    
     if 'file' in request.files and request.files['file'].filename:
-        # Upload de arquivo
         file = request.files['file']
         file_id = generate_id()
         file_content = file.read()
@@ -72,7 +91,6 @@ def upload():
         return {'success': True, 'url': f"{request.host_url}{file_id}", 'id': file_id}
     
     elif request.form.get('code'):
-        # Paste de código
         code_id = generate_id()
         language = request.form.get('language', 'text')
         
@@ -143,6 +161,3 @@ def download(id):
 @app.errorhandler(404)
 def not_found(e):
     return render_template('404.html'), 404
-
-if __name__ == '__main__':
-    app.run(debug=True)

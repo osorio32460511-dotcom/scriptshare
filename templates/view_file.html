@@ -17,8 +17,7 @@
     
     <div style="color: #8b949e; margin: 20px 0;">
         <p>📦 {{ (paste.get_size() / 1024)|round(2) }} KB • {{ paste.mime_type }}</p>
-        <p>📅 {{ paste.created_at.strftime('%d/%m/%Y') }} • 👁️ {{ paste.views }} views</p>
-        <p>💾 Arquivo salvo permanentemente</p>
+        <p>📅 {{ paste.created_at.strftime('%d/%m/%Y') }} • 👁️ {{ paste.views }} downloads</p>
     </div>
     
     <div style="margin-top: 30px;">
@@ -36,9 +35,5 @@
         <pre style="background: #0d1117; padding: 20px; border-radius: 8px; overflow-x: auto;"><code>{{ paste.file_data.decode('utf-8', errors='ignore')[:2000] }}{% if paste.get_size() > 2000 %}... (baixe para ver completo){% endif %}</code></pre>
     </div>
     {% endif %}
-    
-    <div style="margin-top: 30px;">
-        <a href="/" class="btn btn-secondary">← Enviar outro</a>
-    </div>
 </div>
 {% endblock %}
